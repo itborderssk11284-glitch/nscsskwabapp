@@ -1,0 +1,6 @@
+{
+  "name": "ระบบคำนวนค่างานการพยาบาล โรงพยาบาลสังขละบุรี",
+  "description": "ระบบวิเคราะห์ ออกแบบ และคำนวณค่างานรวมถึงประสิทธิภาพการทำงาน (Productivity) และอัตรากำลังพยาบาลตามมาตรฐานสากล โรงพยาบาลสังขละบุรี",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

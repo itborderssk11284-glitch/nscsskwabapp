@@ -1,0 +1,28 @@
+{
+  "entities": {
+    "users": {
+      "fields": {
+        "id": { "type": "string", "description": "User UID" },
+        "name": { "type": "string", "description": "Full name" },
+        "email": { "type": "string", "description": "Email address" },
+        "role": { "type": "string", "description": "User role: director, head_nurse, staff_nurse, auditor_hr" },
+        "roleTitle": { "type": "string", "description": "Role title" },
+        "departmentId": { "type": "string", "description": "Department ID or all" },
+        "createdAt": { "type": "string", "description": "Creation timestamp" }
+      }
+    },
+    "uploaded_files": {
+      "fields": {
+        "id": { "type": "string", "description": "File ID" },
+        "fileName": { "type": "string", "description": "Name of file" },
+        "fileType": { "type": "string", "description": "MIME type" },
+        "fileSize": { "type": "number", "description": "Size in bytes" },
+        "departmentId": { "type": "string", "description": "Department ID" },
+        "category": { "type": "string", "description": "Category" },
+        "uploadedBy": { "type": "string", "description": "User name" },
+        "uploadedByUid": { "type": "string", "description": "User UID" },
+        "uploadedAt": { "type": "string", "description": "Upload ISO timestamp" }
+      }
+    }
+  }
+}
