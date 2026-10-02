@@ -12,7 +12,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Database,
-  Sparkles,
   Users,
   Shield,
   Building,
@@ -98,7 +97,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLoginSuccess,
           u.username.toLowerCase() === emailInput.trim().toLowerCase()
       );
 
-      if (localMatch && (localMatch.pin === passwordInput.trim() || passwordInput.trim() === '123456' || passwordInput.trim() === '1234')) {
+      if (localMatch && localMatch.pin === passwordInput.trim()) {
         onLoginSuccess(localMatch);
         return;
       }
@@ -155,12 +154,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLoginSuccess,
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleQuickFill = (user: UserProfile) => {
-    setEmailInput(user.email || `${user.username}@sangkhla.go.th`);
-    setPasswordInput('123456');
-    setErrorMessage('');
   };
 
   return (
@@ -392,40 +385,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLoginSuccess,
               </button>
             </form>
           )}
-
-          {/* Quick Demo Fill */}
-          <div className="border-t border-slate-100 pt-5">
-            <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>หรือคลิกเลือกบัญชีตัวอย่าง (Quick Demo Fill)</span>
-              </span>
-              <span className="text-[10px] text-slate-500">รหัสผ่าน: 123456</span>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {users.slice(0, 4).map((user) => (
-                <button
-                  key={user.id}
-                  type="button"
-                  onClick={() => handleQuickFill(user)}
-                  className="p-2 border border-slate-200 hover:border-teal-500 hover:bg-teal-50/50 rounded-lg text-left transition-all group flex items-center justify-between"
-                >
-                  <div className="min-w-0 pr-2">
-                    <p className="text-xs font-bold text-slate-800 truncate group-hover:text-teal-900">
-                      {user.name}
-                    </p>
-                    <p className="text-[10px] text-slate-500 truncate">
-                      {user.email || `${user.username}@sangkhla.go.th`}
-                    </p>
-                  </div>
-                  <span className="text-[10px] font-semibold text-teal-700 shrink-0 bg-teal-100/60 px-1.5 py-0.5 rounded">
-                    {user.role === 'staff_nurse' ? 'RN' : user.role === 'auditor_hr' ? 'Auditor' : 'Head'}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
