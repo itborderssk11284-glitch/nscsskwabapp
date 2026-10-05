@@ -349,13 +349,12 @@ export default function App() {
         </footer>
       </div>
 
-      {/* Role-Based Authentication & Switcher Modal */}
+      {/* User Account & Logout Modal */}
       <RoleLoginModal
         isOpen={isRoleModalOpen}
         onClose={() => setIsRoleModalOpen(false)}
         currentUser={currentUser}
-        onSelectUser={setCurrentUser}
-        users={users}
+        onLogout={handleLogout}
       />
 
       {/* Formal Four-Pillar Report & Print Modal */}

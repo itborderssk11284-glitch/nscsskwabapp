@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   X,
   Shield,
@@ -7,49 +7,31 @@ import {
   Building,
   Users,
   Stethoscope,
-  KeyRound
+  LogOut,
+  UserCheck,
+  Mail,
+  Award,
+  AlertTriangle
 } from 'lucide-react';
 import { UserProfile, UserRole } from '../types/nursing';
-import { DEFAULT_USERS, SYSTEM_DEFAULT_USER } from '../data/mockNursingData';
 
 interface RoleLoginModalProps {
   isOpen: boolean;
   onClose: () => void;
-  currentUser?: UserProfile;
-  onSelectUser: (user: UserProfile) => void;
-  users?: UserProfile[];
-  onOpenLoginScreen?: () => void;
-  onNavigateToUserManagement?: () => void;
+  currentUser: UserProfile;
+  onLogout: () => void;
 }
 
 export const RoleLoginModal: React.FC<RoleLoginModalProps> = ({
   isOpen,
   onClose,
-  currentUser = SYSTEM_DEFAULT_USER,
-  onSelectUser,
-  users = DEFAULT_USERS,
-  onOpenLoginScreen,
-  onNavigateToUserManagement,
+  currentUser,
+  onLogout,
 }) => {
-  const [pinInput, setPinInput] = useState('');
-  const [selectedCandidate, setSelectedCandidate] = useState<UserProfile>(
-    users.length > 0 ? users[0] : (currentUser || SYSTEM_DEFAULT_USER)
-  );
-  const [pinError, setPinError] = useState(false);
-
-  // Sync candidate if users list changes
-  React.useEffect(() => {
-    if (users.length > 0 && (!selectedCandidate || !users.some((u) => u.id === selectedCandidate.id))) {
-      setSelectedCandidate(users[0]);
-    }
-  }, [users]);
-
   if (!isOpen) return null;
 
   const getRoleIcon = (role: UserRole) => {
     switch (role) {
-      case 'admin':
-        return Shield;
       case 'director':
         return Building;
       case 'head_nurse':
@@ -57,234 +39,170 @@ export const RoleLoginModal: React.FC<RoleLoginModalProps> = ({
       case 'staff_nurse':
         return Stethoscope;
       case 'auditor_hr':
-      default:
         return Shield;
     }
   };
 
-  const getRoleDetails = (role: UserRole) => {
+  const getRoleBadge = (role: UserRole) => {
     switch (role) {
-      case 'admin':
-        return {
-          levelText: 'ผู้ดูแลระบบสูงสุด (System Admin)',
-          authorities: [
-            'เพิ่ม แก้ไข และลบข้อมูลผู้ใช้งานทุกระดับชั้นในระบบ',
-            'ควบคุมสิทธิ์ความปลอดภัยและโครงสร้างระบบงานพยาบาล',
-            'เชื่อมโยงและซิงค์ข้อมูลกับ Firebase Realtime Database & Firestore',
-            'ดูแลการจัดสรรแผนกและสิทธิ์การเข้าถึงข้อมูลทั้งโรงพยาบาล',
-          ],
-        };
       case 'director':
-        return {
-          levelText: 'ระดับชั้น 1: ผู้บริหารสูงสุด / หัวหน้ากลุ่มงานการพยาบาล (CNO/Admin)',
-          authorities: [
-            'กำกับดูแลตัวชี้วัด Productivity รวมทุกแผนกในโรงพยาบาล',
-            'อนุมัติกรอบอัตรากำลังพยาบาลประจำปี (FTE Allocation Budget)',
-            'ตัดสินใจนโยบายเกลี่ยกำลังคนข้ามหอผู้ป่วยระดับวิกฤต',
-            'บริหารจัดการข้อมูลผู้ใช้งานและส่งออกรายงานทางการพยาบาล',
-          ],
-        };
+        return { label: 'ระดับชั้น 1: CNO / ผู้บริหารสูงสุด', color: 'text-purple-700 bg-purple-50 border-purple-200' };
       case 'head_nurse':
-        return {
-          levelText: 'ระดับชั้น 2: หัวหน้าหอผู้ป่วย / In-Charge Nurse',
-          authorities: [
-            'จัดสรรเวรพยาบาลประจำวัน (เวรเช้า / เวรบ่าย / เวรดึก)',
-            'ประเมินระดับความหนักของผู้ป่วย (Patient Acuity Type 1-5)',
-            'คำนวณ Productivity และตรวจสอบความปลอดภัย Safe Nurse-to-Patient Ratio',
-            'ร้องขอพยาบาลหมุนเวียน (Float Pool Nurse) เมื่อภาระงานวิกฤต',
-          ],
-        };
+        return { label: 'ระดับชั้น 2: หัวหน้าหอผู้ป่วย / In-Charge', color: 'text-sky-700 bg-sky-50 border-sky-200' };
       case 'staff_nurse':
-        return {
-          levelText: 'ระดับชั้น 3: พยาบาลวิชาชีพปฏิบัติการ (Staff Nurse RN)',
-          authorities: [
-            'บันทึกกิจกรรมการพยาบาลรายเคส (Direct Care & Indirect Care)',
-            'ลงเวลาปฏิบัติหัตถการจริงเทียบกับ Standard Time Study',
-            'ประเมินความล้าสะสม (Self Fatigue Score) ตามเวรปฏิบัติงาน',
-            'บันทึกรายงานอุบัติการณ์และความปลอดภัยข้างเตียง',
-          ],
-        };
+        return { label: 'ระดับชั้น 3: พยาบาลวิชาชีพปฏิบัติการ (RN)', color: 'text-emerald-700 bg-emerald-50 border-emerald-200' };
       case 'auditor_hr':
-      default:
-        return {
-          levelText: 'ระดับชั้น 4: ผู้ตรวจสอบค่างานและมาตรฐานวิชาชีพพยาบาล (Auditor/Quality RN)',
-          authorities: [
-            'ปรับปรุงฐานข้อมูลเวลามาตรฐานหัตถการ (Standard Time Calibration)',
-            'วิเคราะห์และจัดสรรอัตรากำลังพยาบาลวิชาชีพ (RN Safe Staffing)',
-            'ตรวจจับจุดสูญเปล่าทางการพยาบาล (LEAN Healthcare Waste Audit)',
-            'คำนวณความต้องการกำลังคนตามสูตรสภาการพยาบาล / กระทรวงสาธารณสุข',
-          ],
-        };
+        return { label: 'ระดับชั้น 4: ผู้ตรวจสอบค่างาน / HR Auditor', color: 'text-amber-700 bg-amber-50 border-amber-200' };
     }
   };
 
-  const handleConfirmLogin = (user: UserProfile) => {
-    onSelectUser(user);
-    onClose();
+  const getRoleAuthorities = (role: UserRole): string[] => {
+    switch (role) {
+      case 'director':
+        return [
+          'กำกับดูแลตัวชี้วัด Productivity รวมทุกแผนกในโรงพยาบาล',
+          'อนุมัติกรอบอัตรากำลังพยาบาลประจำปี (FTE Allocation Budget)',
+          'ตัดสินใจนโยบายเกลี่ยกำลังคนข้ามหอผู้ป่วยระดับวิกฤต',
+          'ส่งออกรายงานทางการพยาบาลต่อผู้อำนวยการโรงพยาบาลและ สสจ.กาญจนบุรี',
+        ];
+      case 'head_nurse':
+        return [
+          'จัดสรรเวรพยาบาลประจำวัน (เวรเช้า / เวรบ่าย / เวรดึก)',
+          'ประเมินระดับความหนักของผู้ป่วย (Patient Acuity Type 1-5)',
+          'คำนวณ Productivity และตรวจสอบความปลอดภัย Safe Nurse-to-Patient Ratio',
+          'ร้องขอพยาบาลหมุนเวียน (Float Pool Nurse) เมื่อภาระงานวิกฤต',
+        ];
+      case 'staff_nurse':
+        return [
+          'บันทึกกิจกรรมการพยาบาลรายเคส (Direct Care & Indirect Care)',
+          'ลงเวลาปฏิบัติหัตถการจริงเทียบกับ Standard Time Study',
+          'ประเมินความล้าสะสม (Self Fatigue Score) ตามเวรปฏิบัติงาน',
+          'บันทึกรายงานอุบัติการณ์และความปลอดภัยข้างเตียง',
+        ];
+      case 'auditor_hr':
+        return [
+          'ปรับปรุงฐานข้อมูลเวลามาตรฐานหัตถการ (Standard Time Calibration)',
+          'วิเคราะห์และจัดสรรอัตรากำลังพยาบาลวิชาชีพ (RN Safe Staffing)',
+          'ตรวจจับจุดสูญเปล่าทางการพยาบาล (LEAN Healthcare Waste Audit)',
+          'คำนวณความต้องการกำลังคนตามสูตรสภาการพยาบาล / กระทรวงสาธารณสุข',
+        ];
+    }
   };
+
+  const handleConfirmLogout = () => {
+    onClose();
+    onLogout();
+  };
+
+  const Icon = getRoleIcon(currentUser.role);
+  const badge = getRoleBadge(currentUser.role);
+  const authorities = getRoleAuthorities(currentUser.role);
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-      <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
+      <div className="bg-white rounded-2xl shadow-2xl max-w-xl w-full overflow-hidden border border-slate-200 animate-in fade-in zoom-in-95 duration-150">
         {/* Header */}
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
           <div>
             <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
-              <KeyRound className="w-5 h-5 text-teal-700" />
-              เลือกระดับชั้นการเข้าใช้งาน (Role-Based Authentication)
+              <UserCheck className="w-5 h-5 text-teal-700" />
+              <span>ข้อมูลผู้ใช้งานและการเข้าสู่ระบบ</span>
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              ระบบจัดแบ่งสิทธิ์ตามโครงสร้างการบริหารงานพยาบาล โรงพยาบาลสังขละบุรี
+              กลุ่มงานการพยาบาล โรงพยาบาลสังขละบุรี
             </p>
           </div>
           <button
             onClick={onClose}
-            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition-colors"
+            className="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-slate-200 transition-colors cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 space-y-4">
-          {users.length === 0 ? (
-            <div className="p-8 bg-slate-50 rounded-xl border border-slate-200 text-center space-y-4">
-              <div className="w-14 h-14 rounded-full bg-teal-50 border border-teal-200 text-teal-700 flex items-center justify-center mx-auto shadow-xs">
-                <Users className="w-7 h-7" />
+        <div className="p-6 space-y-5">
+          {/* Active User Profile Card */}
+          <div className="p-4 rounded-xl border border-teal-200 bg-teal-50/40 relative">
+            <div className="flex items-start gap-3.5">
+              <div className="w-12 h-12 rounded-xl bg-teal-700 text-white flex items-center justify-center shrink-0 shadow-xs">
+                <Icon className="w-6 h-6" />
               </div>
-              <div>
-                <h4 className="text-sm font-bold text-slate-800">
-                  ยังไม่มีบัญชีผู้ใช้งานในฐานข้อมูล (ฐานข้อมูลว่างเปล่า)
-                </h4>
-                <p className="text-xs text-slate-500 mt-1 max-w-md mx-auto leading-relaxed">
-                  ระบบถูกตั้งค่าเป็น Clean Slate เพื่อเตรียมพร้อมสำหรับการลงข้อมูลจริงของโรงพยาบาลสังขละบุรี ท่านสามารถสร้างบัญชีผู้ใช้งานจริง หรือลงทะเบียนผ่าน Firebase Authentication
-                </p>
-              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h4 className="text-sm font-bold text-slate-900">{currentUser.name}</h4>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${badge.color}`}>
+                    {badge.label}
+                  </span>
+                </div>
+                <div className="text-xs text-teal-800 font-semibold mt-0.5">
+                  {currentUser.roleTitle}
+                </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
-                {onOpenLoginScreen && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onOpenLoginScreen();
-                    }}
-                    className="px-4 py-2 text-xs font-bold text-white bg-teal-700 hover:bg-teal-800 rounded-lg shadow-xs transition-colors cursor-pointer"
-                  >
-                    เข้าสู่ระบบ / ลงทะเบียน (Firebase Auth)
-                  </button>
-                )}
-                {onNavigateToUserManagement && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      onClose();
-                      onNavigateToUserManagement();
-                    }}
-                    className="px-4 py-2 text-xs font-bold text-teal-800 bg-white border border-teal-300 hover:bg-teal-50 rounded-lg transition-colors cursor-pointer"
-                  >
-                    ไปที่หน้าจัดการผู้ใช้งาน (User Management)
-                  </button>
-                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-3 pt-3 border-t border-teal-100 text-xs text-slate-600">
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Building className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>สังกัด: <strong>{currentUser.departmentName}</strong></span>
+                  </div>
+                  <div className="flex items-center gap-1.5 truncate">
+                    <Award className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                    <span>ใบอนุญาต: <strong className="font-mono">{currentUser.licenseNo}</strong></span>
+                  </div>
+                  {currentUser.email && (
+                    <div className="flex items-center gap-1.5 truncate sm:col-span-2">
+                      <Mail className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="truncate">อีเมล: <strong className="font-mono">{currentUser.email}</strong></span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
-                {users.map((user) => {
-                  const isSelected = selectedCandidate.id === user.id;
-                  const isCurrent = currentUser.id === user.id;
-                  const Icon = getRoleIcon(user.role);
-                  const details = getRoleDetails(user.role);
+          </div>
 
-                  return (
-                    <div
-                      key={user.id}
-                      onClick={() => setSelectedCandidate(user)}
-                      className={`relative p-4 rounded-lg border text-left cursor-pointer transition-all ${
-                        isSelected
-                          ? 'border-teal-600 bg-teal-50/50 ring-1 ring-teal-600 shadow-xs'
-                          : 'border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50'
-                      }`}
-                    >
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-center space-x-2.5">
-                          <div
-                            className={`w-9 h-9 rounded-lg flex items-center justify-center ${
-                              isSelected ? 'bg-teal-700 text-white' : 'bg-slate-100 text-slate-600'
-                            }`}
-                          >
-                            <Icon className="w-5 h-5" />
-                          </div>
-                          <div>
-                            <div className="text-sm font-semibold text-slate-900">{user.name}</div>
-                            <div className="text-xs text-teal-700 font-medium">{user.roleTitle}</div>
-                          </div>
-                        </div>
-                        {isCurrent && (
-                          <span className="text-[11px] font-semibold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-sm">
-                            กำลังใช้งาน
-                          </span>
-                        )}
-                      </div>
+          {/* Security Notice: No Direct User Switching */}
+          <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-xs text-amber-900 flex items-start gap-2.5">
+            <Lock className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">
+              <span className="font-bold block">ระบบรักษาความปลอดภัยบัญชีผู้ใช้งาน:</span>
+              <span>
+                ไม่อนุญาตให้สลับผู้ใช้งานโดยตรง เพื่อรักษาความถูกต้องของข้อมูลเวรและประวัติการลงชื่อปฏิบัติงาน หากต้องการเปลี่ยนผู้ใช้งาน กรุณากดปุ่ม <strong>&quot;ออกจากระบบ (Log Out)&quot;</strong> ด้านล่าง
+              </span>
+            </div>
+          </div>
 
-                      <div className="mt-3 pt-2.5 border-t border-slate-100 text-xs text-slate-600">
-                        <div className="font-medium text-slate-800 text-[11px] mb-1">
-                          {details.levelText}
-                        </div>
-                        <div className="text-slate-500 text-[11px] truncate">
-                          สังกัด: {user.departmentName}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-
-              {/* Selected Candidate Privileges Summary */}
-              {(() => {
-                const candidate = selectedCandidate || users[0] || currentUser || SYSTEM_DEFAULT_USER;
-                const candidateDetails = getRoleDetails(candidate.role);
-                return (
-                  <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                    <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-4 h-4 text-teal-700" />
-                      ขอบเขตอำนาจและสิทธิ์ในระบบของ {candidate.name} ({candidate.roleTitle})
-                    </h4>
-                    <ul className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-slate-600">
-                      {candidateDetails.authorities.map((item, idx) => (
-                        <li key={idx} className="flex items-start gap-1.5">
-                          <span className="text-teal-600 font-bold">✓</span>
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                );
-              })()}
-            </>
-          )}
+          {/* User Privileges & Scope */}
+          <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+            <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wider mb-2.5 flex items-center gap-1.5">
+              <CheckCircle2 className="w-4 h-4 text-teal-700" />
+              <span>ขอบเขตอำนาจหน้าที่ของบทบาทนี้ ({currentUser.roleTitle})</span>
+            </h5>
+            <ul className="space-y-1.5 text-xs text-slate-600">
+              {authorities.map((item, idx) => (
+                <li key={idx} className="flex items-start gap-2">
+                  <span className="text-teal-600 font-bold shrink-0">✓</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        {/* Footer */}
+        {/* Footer Actions */}
         <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex items-center justify-between">
-          <div className="text-xs text-slate-500">
-            ใบอนุญาตเลขที่: <span className="font-mono">{selectedCandidate.licenseNo}</span>
-          </div>
-          <div className="flex items-center space-x-2">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-md hover:bg-slate-100 transition-colors"
-            >
-              ยกเลิก
-            </button>
-            <button
-              onClick={() => handleConfirmLogin(selectedCandidate)}
-              className="px-4 py-2 text-xs font-semibold text-white bg-teal-700 hover:bg-teal-800 rounded-md shadow-xs transition-colors"
-            >
-              ยืนยันเข้าสู่ระบบในบทบาทนี้
-            </button>
-          </div>
+          <button
+            onClick={onClose}
+            className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer"
+          >
+            ปิดหน้าต่าง
+          </button>
+
+          <button
+            onClick={handleConfirmLogout}
+            className="px-4 py-2 text-xs font-bold text-white bg-red-600 hover:bg-red-700 rounded-lg shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
+          >
+            <LogOut className="w-4 h-4" />
+            <span>ออกจากระบบ (Log Out)</span>
+          </button>
         </div>
       </div>
     </div>

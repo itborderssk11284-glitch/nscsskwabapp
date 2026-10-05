@@ -174,13 +174,13 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span>พิมพ์รายงาน 4 เสาหลัก</span>
             </button>
 
-            {/* Role Switcher Pill-free Button */}
+            {/* User Info & Logout Button */}
             <button
               onClick={onOpenRoleModal}
               className={`flex items-center gap-2 px-2.5 py-1.5 text-xs font-medium border rounded-md transition-all hover:shadow-xs ${getRoleBadgeColor(
                 currentUser.role
               )}`}
-              title="คลิกเพื่อสลับระดับชั้นผู้ใช้"
+              title="ข้อมูลผู้ใช้งานและออกจากระบบ (User Profile & Log Out)"
             >
               <div className="w-2 h-2 rounded-full bg-current animate-pulse" />
               <div className="text-left">
