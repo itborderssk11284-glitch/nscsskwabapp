@@ -213,9 +213,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full p-2.5 rounded-lg border border-slate-200 bg-white hover:border-slate-300 transition-colors text-left flex items-center justify-between shadow-2xs group"
           >
             <div className="overflow-hidden pr-2">
-              <div className="text-xs font-bold text-slate-900 truncate">{currentUser.name}</div>
-              <span className={`inline-block text-[10px] font-medium px-1.5 py-0.2 rounded border mt-0.5 ${getRoleBadgeColor(currentUser.role)}`}>
-                {currentUser.roleTitle}
+              <div className="text-xs font-bold text-slate-900 truncate">
+                {currentUser?.name || 'พยาบาลวิชาชีพผู้ปฏิบัติการ'}
+              </div>
+              <span className={`inline-block text-[10px] font-medium px-1.5 py-0.2 rounded border mt-0.5 ${getRoleBadgeColor(currentUser?.role || 'staff_nurse')}`}>
+                {currentUser?.roleTitle || 'พยาบาลวิชาชีพปฏิบัติการ (RN)'}
               </span>
             </div>
             <span className="text-[10px] text-teal-700 font-bold group-hover:underline shrink-0">
@@ -227,11 +229,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center justify-between pt-1 text-xs">
             <button
               onClick={onResetData}
-              title="รีเซ็ตข้อมูลจำลอง"
-              className="p-1.5 text-slate-400 hover:text-slate-600 rounded-md hover:bg-slate-200 transition-colors flex items-center gap-1 text-[11px]"
+              title="ล้างข้อมูลเป็นฐานเปล่า (Clean Slate) เพื่อลงข้อมูลจริง"
+              className="p-1.5 text-slate-500 hover:text-red-700 rounded-md hover:bg-red-50 transition-colors flex items-center gap-1 text-[11px] font-semibold"
             >
-              <RotateCcw className="w-3.5 h-3.5" />
-              <span>รีเซ็ต</span>
+              <RotateCcw className="w-3.5 h-3.5 text-red-500" />
+              <span>ล้างฐานเปล่า</span>
             </button>
 
             <button
@@ -239,7 +241,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
               className="p-1.5 text-teal-700 hover:text-teal-800 rounded-md hover:bg-teal-50 transition-colors flex items-center gap-1 text-[11px] font-bold"
             >
               <Users className="w-3.5 h-3.5" />
-              <span>สลับผู้ใช้งาน</span>
+              <span>เข้าสู่ระบบ</span>
             </button>
           </div>
         </div>

@@ -82,7 +82,7 @@ export const WorkloadCalculatorView: React.FC<WorkloadCalculatorViewProps> = ({
   const activeShiftData = roster.shifts[activeShiftKey] || roster.shifts.morning;
 
   // Calendar & Date Management
-  const [selectedDate, setSelectedDate] = useState<string>(roster.date || '2026-10-01');
+  const [selectedDate, setSelectedDate] = useState<string>(roster.date || new Date().toISOString().split('T')[0]);
   const [isSaving, setIsSaving] = useState<boolean>(false);
   const [saveNotice, setSaveNotice] = useState<string | null>(null);
   const [lastSavedTime, setLastSavedTime] = useState<string | null>(null);
@@ -91,14 +91,14 @@ export const WorkloadCalculatorView: React.FC<WorkloadCalculatorViewProps> = ({
   // Indirect Workload Config (ขั้นตอนที่ 2)
   const indirectConfig: IndirectWorkloadConfig = roster.indirectConfig || {
     method: 'allowance_percentage',
-    fixedHours: 2.0,
+    fixedHours: 0,
     allowancePercent: 20,
     selectedActivityCounts: {},
     fixedItems: [
-      { id: 'fx-1', title: 'การรับ-ส่งเวรและสรุปยอดผู้ป่วย (Shift Handover)', minutes: 45, enabled: true },
-      { id: 'fx-2', title: 'การตรวจนับยาควบคุม ยาเสพติด และตู้ยาฉุกเฉิน (Medication Check)', minutes: 25, enabled: true },
-      { id: 'fx-3', title: 'ประชุม Morning Brief / มอบหมายงานประจำเวร', minutes: 20, enabled: true },
-      { id: 'fx-4', title: 'ตรวจเช็คอุปกรณ์ช่วยชีวิต & เครื่อง Defibrillator', minutes: 30, enabled: true },
+      { id: 'fx-1', title: 'การรับ-ส่งเวรและสรุปยอดผู้ป่วย (Shift Handover)', minutes: 45, enabled: false },
+      { id: 'fx-2', title: 'การตรวจนับยาควบคุม ยาเสพติด และตู้ยาฉุกเฉิน (Medication Check)', minutes: 25, enabled: false },
+      { id: 'fx-3', title: 'ประชุม Morning Brief / มอบหมายงานประจำเวร', minutes: 20, enabled: false },
+      { id: 'fx-4', title: 'ตรวจเช็คอุปกรณ์ช่วยชีวิต & เครื่อง Defibrillator', minutes: 30, enabled: false },
     ],
   };
 
@@ -173,7 +173,7 @@ export const WorkloadCalculatorView: React.FC<WorkloadCalculatorViewProps> = ({
 
   // Quick preset dates
   const handleQuickDateSelect = (daysAgo: number) => {
-    const d = new Date('2026-10-01');
+    const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     const dateStr = d.toISOString().split('T')[0];
     handleDateChange(dateStr);

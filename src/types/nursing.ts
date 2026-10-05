@@ -1,4 +1,4 @@
-export type UserRole = 'director' | 'head_nurse' | 'staff_nurse' | 'auditor_hr';
+export type UserRole = 'director' | 'head_nurse' | 'staff_nurse' | 'auditor_hr' | 'admin';
 
 export interface UserProfile {
   id: string;
@@ -14,6 +14,7 @@ export interface UserProfile {
   pin: string;
   avatarUrl?: string;
   createdAt?: string;
+  isAdmin?: boolean;
 }
 
 export type DepartmentId = 'er' | 'ipd1' | 'ipd2' | 'opd' | 'lr';

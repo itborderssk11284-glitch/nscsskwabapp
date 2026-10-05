@@ -18,6 +18,7 @@ import {
   doc,
   setDoc,
   getDoc,
+  getDocs,
   collection,
   onSnapshot,
   deleteDoc,
@@ -222,6 +223,49 @@ export async function logoutFirebaseUser(): Promise<void> {
  */
 export function subscribeToAuthState(callback: (user: User | null) => void) {
   return onAuthStateChanged(auth, callback);
+}
+
+/**
+ * Fetch all real users from Firestore
+ */
+export async function fetchUsersFromFirestore(): Promise<UserProfile[]> {
+  try {
+    const snap = await getDocs(collection(db, 'users'));
+    const userList: UserProfile[] = [];
+    snap.forEach((d) => {
+      userList.push(d.data() as UserProfile);
+    });
+    return userList;
+  } catch (error) {
+    console.warn('fetchUsersFromFirestore notice:', error);
+    return [];
+  }
+}
+
+/**
+ * Subscribe to real users collection in Firestore
+ */
+export function subscribeToUsers(callback: (users: UserProfile[]) => void): () => void {
+  try {
+    return onSnapshot(
+      collection(db, 'users'),
+      (snapshot) => {
+        const userList: UserProfile[] = [];
+        snapshot.forEach((d) => {
+          userList.push(d.data() as UserProfile);
+        });
+        if (userList.length > 0) {
+          callback(userList);
+        }
+      },
+      (error) => {
+        console.warn('subscribeToUsers notice:', error);
+      }
+    );
+  } catch (err) {
+    console.warn('subscribeToUsers init error:', err);
+    return () => {};
+  }
 }
 
 // -------------------------------------------------------------
@@ -468,6 +512,50 @@ export async function fetchDailyWorkloadRecord(
   }
 
   return null;
+}
+
+/**
+ * Delete a daily workload record from Firestore and Realtime Database
+ */
+export async function deleteDailyWorkloadRecord(deptId: DepartmentId, date: string): Promise<void> {
+  if (realtimeDb) {
+    try {
+      await rtdbRemove(rtdbRef(realtimeDb, `daily_workloads/${deptId}/${date}`));
+    } catch (e) {
+      console.warn('Realtime Database workload delete error:', e);
+    }
+  }
+
+  try {
+    await deleteDoc(doc(db, 'daily_workloads', `${deptId}_${date}`));
+  } catch (e) {
+    console.warn('Firestore daily_workload delete error:', e);
+  }
+}
+
+/**
+ * Clean any remaining demo records while keeping user data strictly untouched
+ */
+export async function deleteDemoWorkloads(): Promise<{ deleted: number }> {
+  let count = 0;
+  try {
+    const snap = await getDocs(collection(db, 'daily_workloads'));
+    for (const d of snap.docs) {
+      const data = d.data();
+      // Identify demo records by mock date 2026-10-01 or mock nurse name
+      if (
+        data.date === '2026-10-01' ||
+        data.savedByName === 'พว. ธีรภัทร ชาญวารี' ||
+        d.id.includes('2026-10-01')
+      ) {
+        await deleteDoc(doc(db, 'daily_workloads', d.id));
+        count++;
+      }
+    }
+  } catch (err) {
+    console.warn('deleteDemoWorkloads notice:', err);
+  }
+  return { deleted: count };
 }
 
 /**

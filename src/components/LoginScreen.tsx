@@ -129,7 +129,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLoginSuccess,
     setLoading(true);
     try {
       const roleTitles: Record<UserRole, string> = {
-        director: 'หัวหน้ากลุ่มงานการพยาบาล (Chief Nurse)',
+        admin: 'ผู้ดูแลระบบ (System Admin)',
+        director: 'ผู้บริหาร / หัวหน้ากลุ่มงานการพยาบาล (Admin/CNO)',
         head_nurse: 'หัวหน้าหอผู้ป่วย / หัวหน้าเวร',
         staff_nurse: 'พยาบาลวิชาชีพปฏิบัติการ (RN)',
         auditor_hr: 'พยาบาลวิชาชีพผู้ตรวจสอบคุณภาพ (RN Auditor)',
@@ -343,10 +344,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ users, onLoginSuccess,
                     onChange={(e) => setRegRole(e.target.value as UserRole)}
                     className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs font-semibold focus:ring-2 focus:ring-teal-600 bg-white"
                   >
+                    <option value="admin">ผู้ดูแลระบบ (System Admin)</option>
+                    <option value="director">หัวหน้ากลุ่มงาน (CNO / ผู้บริหาร)</option>
+                    <option value="head_nurse">หัวหน้าหอผู้ป่วย (Head Nurse)</option>
                     <option value="staff_nurse">พยาบาลวิชาชีพปฏิบัติการ (RN)</option>
                     <option value="auditor_hr">พยาบาลวิชาชีพผู้ตรวจสอบ (RN Auditor)</option>
-                    <option value="head_nurse">หัวหน้าหอผู้ป่วย (Head Nurse)</option>
-                    <option value="director">หัวหน้ากลุ่มงาน (CNO)</option>
                   </select>
                 </div>
 

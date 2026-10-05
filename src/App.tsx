@@ -19,8 +19,12 @@ import { FourPillarReportModal } from './components/FourPillarReportModal';
 import {
   syncRosterToRealtimeDb,
   subscribeToRosterFromRealtimeDb,
-  logoutFirebaseUser
+  logoutFirebaseUser,
+  subscribeToUsers,
+  fetchDailyWorkloadRecord,
+  db
 } from './services/firebaseService';
+import { doc, setDoc, deleteDoc } from 'firebase/firestore';
 
 import {
   DepartmentId,
@@ -34,6 +38,7 @@ import {
   DEFAULT_USERS,
   DEPARTMENTS,
   INITIAL_SHIFT_ROSTERS,
+  createCleanRoster,
   MASTER_NURSING_ACTIVITIES,
   SANGKHLABURI_HOSPITAL_META
 } from './data/mockNursingData';
@@ -59,6 +64,45 @@ export default function App() {
   const [shiftRosters, setShiftRosters] = useState<Record<DepartmentId, ShiftRosterData>>(
     INITIAL_SHIFT_ROSTERS
   );
+
+  // Subscribe to real users from Firestore collection (keeping user accounts persistent)
+  useEffect(() => {
+    const unsubUsers = subscribeToUsers((firestoreUsers) => {
+      if (firestoreUsers && firestoreUsers.length > 0) {
+        setUsers(firestoreUsers);
+        // Ensure current active user is valid
+        setCurrentUser((prev) => {
+          const match = firestoreUsers.find(
+            (u) => u.id === prev.id || (u.email && prev.email && u.email === prev.email)
+          );
+          return match || firestoreUsers[0];
+        });
+      }
+    });
+
+    return () => {
+      if (unsubUsers) unsubUsers();
+    };
+  }, []);
+
+  // Load real saved daily workloads from Firestore on initial boot
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const depts: DepartmentId[] = ['er', 'ipd1', 'ipd2', 'opd', 'lr'];
+    depts.forEach(async (deptId) => {
+      try {
+        const saved = await fetchDailyWorkloadRecord(deptId, today);
+        if (saved) {
+          setShiftRosters((prev) => ({
+            ...prev,
+            [deptId]: saved,
+          }));
+        }
+      } catch (err) {
+        console.warn('Initial workload fetch notice for ' + deptId, err);
+      }
+    });
+  }, []);
 
   // Realtime Database: Subscribe to live shift roster changes for the selected ward
   useEffect(() => {
@@ -128,12 +172,25 @@ export default function App() {
     setShowLoginScreen(true);
   };
 
-  const handleAddUser = (newUser: UserProfile) => {
+  const handleAddUser = async (newUser: UserProfile) => {
     setUsers((prev) => [newUser, ...prev]);
+    try {
+      await setDoc(doc(db, 'users', newUser.id), {
+        ...newUser,
+        createdAt: newUser.createdAt || new Date().toISOString(),
+      });
+    } catch (e) {
+      console.warn('Sync new user to Firestore notice:', e);
+    }
   };
 
-  const handleDeleteUser = (userId: string) => {
+  const handleDeleteUser = async (userId: string) => {
     setUsers((prev) => prev.filter((u) => u.id !== userId));
+    try {
+      await deleteDoc(doc(db, 'users', userId));
+    } catch (e) {
+      console.warn('Delete user from Firestore notice:', e);
+    }
   };
 
   const handleUpdateRoster = (deptId: DepartmentId, newRoster: ShiftRosterData) => {
@@ -157,8 +214,15 @@ export default function App() {
 
   const handleResetData = () => {
     setActivities(MASTER_NURSING_ACTIVITIES);
-    setShiftRosters(INITIAL_SHIFT_ROSTERS);
-    setUsers(DEFAULT_USERS);
+    const today = new Date().toISOString().split('T')[0];
+    setShiftRosters({
+      er: createCleanRoster('er', today),
+      ipd1: createCleanRoster('ipd1', today),
+      ipd2: createCleanRoster('ipd2', today),
+      opd: createCleanRoster('opd', today),
+      lr: createCleanRoster('lr', today),
+    });
+    // ข้อมูลผู้ใช้งานจริง (User Accounts) จะถูกเก็บรักษาไว้เสมอ ไม่ถูกลบ
     setSelectedDeptId('er');
     setActiveTab('executive');
     setTimeframe('daily');
